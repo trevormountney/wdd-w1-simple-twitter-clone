@@ -3,6 +3,11 @@ from django_webtest import WebTest
 
 from twitter.models import Tweet
 
+try:
+    from urllib.parse import quote
+except ImportError:
+    from urllib import quote
+
 User = get_user_model()
 
 
@@ -38,7 +43,7 @@ class NotAuthenticatedTestCase(BaseTwitterCloneTestCase):
         "Should be redirected if trying to browse the home page"
         index = self.app.get('/')
         self.assertEqual(index.status_code, 302)
-        self.assertTrue(index.headers.get('Location').startswith('/login'))
+        self.assertTrue(index.location.endswith('/login?next=/'))
 
     def test_profile_view_redirects_if_not_authenticated(self):
         "Should see the profile even if not authenticated"
@@ -102,7 +107,7 @@ class CreateTweetTestCase(BaseTwitterCloneTestCase):
         form['content'] = 'rmotr.com - Web Dev Django'
         response = form.submit()
         self.assertEqual(response.status_code, 302)
-        self.assertTrue(response.location.startswith('/login'))
+        self.assertTrue(response.location.endswith('/login?next=/'))
 
     def test_user_cant_send_tweet_to_wrong_URL(self):
         index = self.app.get('/', user=self.jack)
@@ -220,7 +225,7 @@ class DeleteTweetTestCase(BaseTwitterCloneTestCase):
 
         # Post conditions
         self.assertEqual(delete_resp.status_code, 302)
-        self.assertEqual(delete_resp.location, '/')
+        self.assertTrue(delete_resp.location.endswith('/'))
         self.assertEqual(Tweet.objects.count(), 0)
 
     def test_user_cant_delete_other_users_tweet(self):
@@ -250,5 +255,6 @@ class DeleteTweetTestCase(BaseTwitterCloneTestCase):
 
         # Post conditions
         self.assertEqual(delete_resp.status_code, 302)
-        self.assertTrue(delete_resp.location.startswith('/login'))
+        self.assertTrue(delete_resp.location.endswith(
+            '/login?next=%s' % quote(form.action)))
         self.assertEqual(Tweet.objects.count(), 1)
