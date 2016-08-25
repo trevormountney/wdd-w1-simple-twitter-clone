@@ -89,3 +89,19 @@ $ ./setup_venv.sh twitter_clone
 ```
 
 **Important:** You should execute the command in an active virtualenv.
+
+# Running your tests
+
+Assuming you did everything right 👆, you'll want now to run the tests in your project. The Django subcommand to do that is: `django-admin test`. You can then specify which _module_ you want to test. For this particular project, the module to test is `test_twitter_clone` (from [here](https://github.com/rmotr-group-projects/wdd-w1-simple-twitter-clone/blob/master/test_twitter_clone.py)). The final command to run the tests then:
+
+```python
+django-admin test test_twitter_clone
+```
+
+## Running just one particular test
+
+The notation is: `django-admin test [MODULE].[CLASS].[METHOD]`. Example:
+
+```python
+django-admin test test_twitter_clone. CreateTweetTestCase.test_user_can_post_tweet_successfully
+```
